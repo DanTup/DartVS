@@ -35,6 +35,8 @@ namespace DanTup.DartVS
 		ITextDocumentFactoryService textDocumentFactory;
 		DartAnalysisServiceFactory analysisServiceFactory;
 
+		static string fakeResults = null;
+
 		public CompletionSource(CompletionSourceProvider provider, ITextBuffer buffer, ITextDocumentFactoryService textDocumentFactory, DartAnalysisServiceFactory analysisServiceFactory)
 		{
 			this.provider = provider;
@@ -55,17 +57,34 @@ namespace DanTup.DartVS
 
 			var applicableTo = buffer.CurrentSnapshot.CreateTrackingSpan(new SnapshotSpan(triggerPoint.Value, 1), SpanTrackingMode.EdgeInclusive);
 
-			var completions = new ObservableCollection<Completion>();
-			completions.Add(new Completion("Hard-coded..."));
-
-			var completionSet = new CompletionSet("All", "All", applicableTo, Enumerable.Empty<Completion>(), completions);
-			completionSets.Add(completionSet);
-
-			Task.Run(async () =>
+			if (fakeResults == null)
 			{
-				await Task.Delay(1000); // Wait 1s
-				completions.Add(new Completion("Danny"));
-			});
+				var completions = new ObservableCollection<Completion>();
+				completions.Add(new Completion("Hard-coded..."));
+
+				var completionSet = new CompletionSet("All", "All", applicableTo, Enumerable.Empty<Completion>(), completions);
+				completionSets.Add(completionSet);
+
+				Task.Run(async () =>
+				{
+					await Task.Delay(1000); // Wait 1s
+					fakeResults = "Danny";
+
+					Helpers.ExecuteCommand("Edit.CompleteWord");
+				});
+			}
+			else
+			{
+				var completions = new ObservableCollection<Completion>();
+				completions.Add(new Completion(fakeResults));
+
+				var completionSet = new CompletionSet("All", "All", applicableTo, Enumerable.Empty<Completion>(), completions);
+				completionSets.Add(completionSet);
+
+				fakeResults = null;
+			}
+
+
 
 			//// Kick of async request to update the results.
 			//analysisService

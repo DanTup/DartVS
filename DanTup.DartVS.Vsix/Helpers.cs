@@ -1,4 +1,5 @@
 ﻿using System;
+using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
@@ -12,6 +13,8 @@ namespace DanTup.DartVS
 	// Borrowed from WebEssentials...
 	static class Helpers
 	{
+		public static DTE2 DTE = Package.GetGlobalService(typeof(EnvDTE.DTE)) as DTE2;
+
 		public static void OpenFileInPreviewTab(IServiceProvider serviceProvider, string file)
 		{
 			IVsNewDocumentStateContext newDocumentStateContext = null;
@@ -53,6 +56,13 @@ namespace DanTup.DartVS
 		public static IComponentModel GetComponentModel()
 		{
 			return (IComponentModel)DartPackage.GetGlobalService(typeof(SComponentModel));
+		}
+
+		public static void ExecuteCommand(string commandName)
+		{
+			var command = DTE.Commands.Item(commandName);
+			if (command.IsAvailable)
+				DTE.ExecuteCommand(command.Name);
 		}
 	}
 }
